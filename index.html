@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Bluekit EX-made by Waaris </title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #cceeff; text-align: center; padding: 20px; }
+  h1 { color: #005f99; text-shadow: 0 0 8px #66bbff; }
+  .card {
+    margin: 10px; padding: 15px; border-radius: 12px;
+    display: inline-block; width: 170px; user-select:none; cursor: pointer;
+    color: black; font-weight: 600; box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease-in-out;
+  }
+  .card:hover { transform: scale(1.05); box-shadow: 0 0 20px #444; }
+  .Common { background-color: #d9d9d9; border: 2px solid #999; }
+  .CringeRare { background-color: #a3c1ff; border: 2px solid #4a7aff; color: #003366; }
+  .Rare { background-color: #99ccff; border: 2px solid #3388ff; color: #002244; }
+  .Epic { background-color: #a366ff; border: 2px solid #7a33ff; color: #f2e6ff; }
+  .Legendary { background-color: #ffb84d; border: 2px solid #ff7a00; color: #4a2b00; font-weight: 700; }
+  .Mystical { background-color: #ff6666; border: 2px solid #cc0000; color: #fff0f0; font-weight: 700; }
+  .UltraRare { background-color: #ffe066; border: 2px solid #ffcc00; color: #665200; font-weight: 700; }
+  .MythicRare { background-color: #6600cc; border: 2px solid #330099; color: #f0e6ff; font-weight: 800; text-shadow: 0 0 5px #bb99ff; }
+  .UltraMythicRare { background-color: #6600cc; border: 2px solid #330099; color: #f0e6ff; font-weight: 800; text-shadow: 0 0 5px #bb99ff; }
+
+  #loginSection, #signupSection { display: none; }
+  .hidden { display: none; }
+  #adminPanel { margin-top: 15px; }
+
+  /* Stats display */
+  .stats {
+    margin-top: 8px;
+    font-size: 0.85em;
+    text-align: left;
+    color: #222;
+  }
+  .stats span {
+    display: block;
+    margin: 2px 0;
+  }
+
+  button {
+    background-color: #0099ff;
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    margin: 6px 4px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  button:hover {
+    background-color: #007acc;
+  }
+
+  input, select {
+    padding: 6px;
+    margin: 6px 4px;
+    border-radius: 6px;
+    border: 1.5px solid #0099ff;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<h1>🔷 Bluekit EX 🔷</h1>
+
+<div id="loginSection">
+  <h2>Login</h2>
+  <input type="text" id="loginUsername" placeholder="Username" /><br />
+  <input type="password" id="loginPassword" placeholder="Password" /><br />
+  <button onclick="login()">Login</button>
+  <p>or <a href="#" onclick="showSignup()">Sign Up</a></p>
+</div>
+
+<div id="signupSection">
+  <h2>Sign Up</h2>
+  <input type="text" id="signupUsername" placeholder="Username" /><br />
+  <input type="password" id="signupPassword" placeholder="Password" /><br />
+  <button onclick="signup()">Create Account</button>
+  <p>or <a href="#" onclick="showLogin()">Login</a></p>
+</div>
+
+<div id="gameSection" class="hidden">
+  <p>Welcome, <span id="usernameDisplay"></span>! Coins: <span id="coins">0</span></p>
+  <button onclick="logout()">Logout</button><br /><br />
+
+  <button onclick="openPack()">Open Pack (400 Coins)</button>
+  <button onclick="sellAllDuplicates()">Sell All Duplicates</button>
+
+  <h3>Packed:</h3>
+  <div id="packedCard"></div>
+
+  <h3>Your Inventory (Click to Sell)</h3>
+  <div id="inventory" style="display: flex; flex-wrap: wrap; justify-content: center;"></div>
+
+  <div>
+    <h3>⚽ Football Smash</h3>
+    <input type="number" id="wagerAmount" placeholder="Wager Amount" />
+    <select id="difficulty">
+      <option value="easy">Easy (0.75x)</option>
+      <option value="medium">Medium (0.5x)</option>
+      <option value="hard">Hard (0.25x)</option>
+    </select>
+    <button onclick="startFootballMatch()">Play Match</button>
+    <div id="footballResult"></div>
+  </div>
+
+  <div>
+    <h3>🧠 Brain Rot Test</h3>
+    <input type="text" id="brainRotWord" placeholder="Enter a brain rot word" />
+    <button onclick="playBrainRot()">Play Brain Rot Test (Cost: 10,000 Coins)</button>
+    <div id="brainRotResult"></div>
+    <div id="brainRotCooldownMsg" style="color: red; font-weight: bold;"></div>
+  </div>
+
+  <div>
+    <h3>Admin Panel</h3>
+    <input type="text" id="adminCodeInput" placeholder="Enter Admin Code" />
+    <button onclick="checkAdminCode()">Submit</button>
+    <div id="adminPanel" style="display:none;">
+      <input type="text" id="cardNameInput" placeholder="Card Name" />
+      <button onclick="addCardToInventory()">Add Card</button><br />
+      <input type="number" id="coinAmountInput" placeholder="Coin Amount" />
+      <button onclick="changeCoins()">Add Coins</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Cards data - note rarity and names
+  const cards = [
+      { name: "Dr.Madhura", rarity: "UltraMythicRare" },
+    { name: "Aryan Ahuja", rarity: "UltraMythicRare" },
+    { name: "Waaris", rarity: "UltraMythicRare" },
+    { name: "Duck", rarity: "Common" },
+    { name: "Dog", rarity: "Common" },
+    { name: "Cat", rarity: "Common" },
+    { name: "Burger", rarity: "Common" },
+    { name: "Pizza", rarity: "Common" },
+    { name: "Wizard", rarity: "Rare" },
+    { name: "Unicorn", rarity: "Rare" },
+    { name: "Dragon", rarity: "Rare" },
+    { name: "Shark", rarity: "Rare" },
+    { name: "Santa Claus", rarity: "Epic" },
+    { name: "Astronaut", rarity: "Epic" },
+    { name: "Knight", rarity: "Epic" },
+    { name: "Samurai", rarity: "Epic" },
+    { name: "King", rarity: "Legendary" },
+    { name: "Mega Bot", rarity: "Legendary" },
+    { name: "Phoenix", rarity: "Legendary" },
+    { name: "Rainbow Panda", rarity: "Mystical" },
+    { name: "Obsidian Dragon", rarity: "Mystical" },
+    { name: "Messi", rarity: "Mystical" },
+    { name: "Ronaldo", rarity: "Mystical" },
+    { name: "Mbappe", rarity: "Epic" },
+    { name: "Haaland", rarity: "Legendary" },
+    { name: "Modric", rarity: "Rare" },
+    { name: "Kane", rarity: "Rare" },
+    { name: "Alisson", rarity: "Common" },
+    { name: "Bellingham", rarity: "Epic" },
+    { name: "Golden Phoenix", rarity: "UltraRare" },
+    { name: "Diamond Messi", rarity: "UltraRare" },
+    { name: "Brainy Bot", rarity: "MythicRare" },
+    { name: "Diamond Ronaldo", rarity: "MythicRare" },
+    { name: "Virat Kohli", rarity: "Rare" },
+    { name: "Steve Smith", rarity: "Epic" },
+    { name: "Sachin Tendulkar", rarity: "Legendary" },
+    { name: "Chris Gayle", rarity: "Mystical" },
+    { name: "Naruto", rarity: "UltraRare" },
+    { name: "Skibidi Toilet", rarity: "UltraMythicRare" },
+    { name: "Alejandro Garnacho", rarity: "UltraRare" },
+    { name: "Nerd", rarity: "CringeRare" },
+    { name: "Vihaan", rarity: "UltraMythicRare" },
+    { name: "Obi Wan Kenobi", rarity: "CringeRare" },
+    { name: "Sasuke", rarity: "UltraMythicRare" },
+    { name: "Arihaan", rarity: "Mystical" },
+  ];
+
+  // Save users data in localStorage for demo
+  let users = JSON.parse(localStorage.getItem("bk_users") || "{}");
+  let currentUser = null;
+  let brainRotCooldown = false;
+
+  // Utility: Generate random int between min and max inclusive
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // Generate stats according to rarity with your rules:
+  // Common: all stats 1-2
+  // CringeRare & Rare: stats 2-3
+  // Epic: all stats 3
+  // Legendary: 10% chance all 4, else all 3
+  // Mystical: all 4
+  // UltraRare: 20% chance all 5, else all 4
+  // MythicRare: 80% chance one stat 5, rest 4 or 5
+
+  function generateStats(rarity) {
+    if (rarity === "UltraMythicRare") {
+      return {
+        aura: randInt(5,6),
+        rizz: randInt(5,6),
+        skibidiness: randInt(5,6)
+      };
+    }
+    if (rarity === "CringeRare" || rarity === "Rare") {
+      return {
+        aura: randInt(2, 3),
+        rizz: randInt(2, 3),
+        skibidiness: randInt(2, 3)
+      };
+    }
+    if (rarity === "Epic") {
+      return { aura: 3, rizz: 3, skibidiness: 3 };
+    }
+    if (rarity === "Legendary") {
+      let val = Math.random() < 0.10 ? 4 : 3;
+      return { aura: val, rizz: val, skibidiness: val };
+    }
+    if (rarity === "Mystical") {
+      return { aura: 4, rizz: 4, skibidiness: 4 };
+    }
+    if (rarity === "UltraRare") {
+      let val = Math.random() < 0.20 ? 5 : 4;
+      return { aura: val, rizz: val, skibidiness: val };
+    }
+    if (rarity === "MythicRare") {
+      // 80% chance one stat is 5, others 4 or 5 randomly
+      if (Math.random() < 0.80) {
+        let stats = { aura: 4, rizz: 4, skibidiness: 4 };
+        const keys = Object.keys(stats);
+        const fiveStat = keys[randInt(0, keys.length - 1)];
+        stats[fiveStat] = 5;
+        // Other stats randomly 4 or 5
+        keys.forEach(k => {
+          if (k !== fiveStat) stats[k] = Math.random() < 0.5 ? 4 : 5;
+        });
+        return stats;
+      } else {
+        // Else all 4
+        return { aura: 4, rizz: 4, skibidiness: 4 };
+      }
+    }
+    // Default fallback (should not happen)
+    return { aura: 1, rizz: 1, skibidiness: 1 };
+  }
+
+  // Display card HTML, includes stats
+  function createCardElement(card) {
+    const cardDiv = document.createElement("div");
+    cardDiv.className = `card ${card.rarity}`;
+    cardDiv.title = `${card.name} (${card.rarity})`;
+
+    // Stats text
+    const statsText = `
+      <div><strong>${card.name}</strong> (${card.rarity})</div>
+      <div class="stats">
+        <span>Aura: ${card.stats.aura} / 5</span>
+        <span>Rizz: ${card.stats.rizz} / 5</span>
+        <span>Skibidiness: ${card.stats.skibidiness} / 5</span>
+      </div>
+    `;
+
+    cardDiv.innerHTML = statsText;
+    return cardDiv;
+  }
+
+  // Show login form initially
+  function showLogin() {
+    document.getElementById("loginSection").style.display = "block";
+    document.getElementById("signupSection").style.display = "none";
+    document.getElementById("gameSection").classList.add("hidden");
+  }
+  function showSignup() {
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("signupSection").style.display = "block";
+    document.getElementById("gameSection").classList.add("hidden");
+  }
+
+  // Login user
+  function login() {
+    const u = document.getElementById("loginUsername").value.trim();
+    const p = document.getElementById("loginPassword").value;
+    if (!users[u] || users[u].password !== p) {
+      alert("Invalid username or password");
+      return;
+    }
+    currentUser = u;
+    localStorage.setItem("bk_currentUser", currentUser);
+    startGame();
+  }
+
+  // Sign up new user
+  function signup() {
+    const u = document.getElementById("signupUsername").value.trim();
+    const p = document.getElementById("signupPassword").value;
+    if (users[u]) {
+      alert("Username already taken");
+      return;
+    }
+    if (!u || !p) {
+      alert("Please enter valid username and password");
+      return;
+    }
+    users[u] = { password: p, coins: 10000, inventory: [] };
+    localStorage.setItem("bk_users", JSON.stringify(users));
+    alert("Account created! Please log in.");
+    showLogin();
+  }
+
+  // Logout
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem("bk_currentUser");
+    showLogin();
+  }
+
+  // Start game after login
+  function startGame() {
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("signupSection").style.display = "none";
+    document.getElementById("gameSection").classList.remove("hidden");
+    document.getElementById("usernameDisplay").textContent = currentUser;
+    updateCoinsDisplay();
+    renderInventory();
+    document.getElementById("packedCard").innerHTML = "";
+    document.getElementById("footballResult").textContent = "";
+    document.getElementById("brainRotResult").textContent = "";
+    document.getElementById("brainRotCooldownMsg").textContent = "";
+  }
+
+  // Update coin display
+  function updateCoinsDisplay() {
+    document.getElementById("coins").textContent = users[currentUser].coins;
+  }
+
+  // Render inventory cards
+  function renderInventory() {
+    const inv = document.getElementById("inventory");
+    inv.innerHTML = "";
+    const userInv = users[currentUser].inventory;
+    if (userInv.length === 0) {
+      inv.textContent = "Your inventory is empty.";
+      return;
+    }
+    userInv.forEach((card, index) => {
+      const cardEl = createCardElement(card);
+      cardEl.title += " (Click to Sell)";
+      cardEl.onclick = () => {
+        if (confirm(`Sell ${card.name} for 500 coins?`)) {
+          sellCard(index);
+        }
+      };
+      inv.appendChild(cardEl);
+    });
+  }
+
+  // Sell a card by index
+  function sellCard(index) {
+    users[currentUser].inventory.splice(index, 1);
+    users[currentUser].coins += 500;
+    saveUsers();
+    updateCoinsDisplay();
+    renderInventory();
+  }
+
+  // Sell all duplicates
+  function sellAllDuplicates() {
+    const userInv = users[currentUser].inventory;
+    const counts = {};
+    userInv.forEach(card => {
+      counts[card.name] = (counts[card.name] || 0) + 1;
+    });
+    let soldCount = 0;
+    // Remove duplicates, keep only one copy per card name
+    users[currentUser].inventory = userInv.filter(card => {
+      if (counts[card.name] > 1) {
+        counts[card.name]--;
+        soldCount++;
+        return false; // remove duplicate
+      }
+      return true;
+    });
+    if (soldCount === 0) {
+      alert("No duplicates to sell.");
+      return;
+    }
+    users[currentUser].coins += soldCount * 500;
+    saveUsers();
+    updateCoinsDisplay();
+    renderInventory();
+    alert(`Sold ${soldCount} duplicate cards for ${soldCount * 500} coins.`);
+  }
+
+  // Save users to localStorage
+  function saveUsers() {
+    localStorage.setItem("bk_users", JSON.stringify(users));
+  }
+
+  // Open pack costs 400 coins, randomly selects one card weighted by rarity chance
+  function openPack() {
+    if (users[currentUser].coins < 400) {
+      alert("Not enough coins to open a pack.");
+      return;
+    }
+
+    // Rarity weights for pack drop rates
+    // Based on your description, adjusted percentages:
+    // MythicRare: 1%
+    // Mystical: 4%
+    // UltraRare: 20%
+    // Legendary: 10%
+    // Epic: 30%
+    // Rare: 20%
+    // CringeRare: 10%
+    // Common: 5%
+    // Let's tweak for good distribution:
+
+    // We'll define cumulative ranges for selection:
+    // For simplicity, cards rarity count percentages for pack:
+    // MythicRare: 1%
+    // Mystical: 4%
+    // UltraRare: 20%
+    // Legendary: 10%
+    // Epic: 30%
+    // Rare: 20%
+    // CringeRare: 10%
+    // Common: 5%
+
+    const rarityChances = [
+      { rarity: "UltraMythicRare", chance: 1.44 },
+      { rarity: "MythicRare", chance: 0.1 },
+      { rarity: "Mystical", chance: 3.25 },
+      { rarity: "UltraRare", chance: 2.5 },
+      { rarity: "Legendary", chance: 5 },
+      { rarity: "Epic", chance: 1 },
+      { rarity: "Rare", chance: 19.8 },
+      { rarity: "CringeRare", chance: 22.5 },
+      { rarity: "Common", chance: 46 }
+    ];
+
+    // Calculate total chance (should be 100)
+    let totalChance = rarityChances.reduce((acc, cur) => acc + cur.chance, 0);
+
+    // Pick rarity by weighted chance
+    let rand = Math.random() * totalChance;
+    let chosenRarity = "Common";
+    for (const rc of rarityChances) {
+      if (rand < rc.chance) {
+        chosenRarity = rc.rarity;
+        break;
+      }
+      rand -= rc.chance;
+    }
+
+    // Filter cards by chosen rarity
+    const possibleCards = cards.filter(c => c.rarity === chosenRarity);
+    if (possibleCards.length === 0) {
+      alert("No cards available for this rarity.");
+      return;
+    }
+
+    // Random card from filtered list
+    const cardPicked = possibleCards[randInt(0, possibleCards.length - 1)];
+    // Generate stats for the card based on rarity
+    const stats = generateStats(cardPicked.rarity);
+
+    // Deduct coins
+    users[currentUser].coins -= 400;
+
+    // Save pack card to show in "packedCard" section (temp)
+    const packedCardObj = {
+      name: cardPicked.name,
+      rarity: cardPicked.rarity,
+      stats
+    };
+    const packedCardDiv = document.getElementById("packedCard");
+    packedCardDiv.innerHTML = "";
+    const cardEl = createCardElement(packedCardObj);
+    packedCardDiv.appendChild(cardEl);
+
+    // Add card to user inventory
+    users[currentUser].inventory.push(packedCardObj);
+    saveUsers();
+
+    updateCoinsDisplay();
+    renderInventory();
+  }
+
+  // Football Smash game
+  function startFootballMatch() {
+    const wager = parseInt(document.getElementById("wagerAmount").value);
+    if (isNaN(wager) || wager <= 0) {
+      alert("Enter a valid wager amount.");
+      return;
+    }
+    if (wager > users[currentUser].coins) {
+      alert("You don't have enough coins.");
+      return;
+    }
+    const difficulty = document.getElementById("difficulty").value;
+    let multiplier = 1.25;
+    if (difficulty === "medium") multiplier = 1.5;
+    else if (difficulty === "hard") multiplier = 2;
+
+    // Outcome: 50% chance win
+    const win = Math.random() < 0.5;
+    const resultDiv = document.getElementById("footballResult");
+    if (win) {
+      const earnings = Math.floor(wager * multiplier);
+      users[currentUser].coins += earnings;
+      resultDiv.textContent = `You won! You earned ${earnings} coins.`;
+    } else {
+      users[currentUser].coins -= wager;
+      resultDiv.textContent = `You lost! You lost ${wager} coins.`;
+    }
+    saveUsers();
+    updateCoinsDisplay();
+  }
+
+  // Brain Rot test
+  const brainRotWords = ["ohio", "lowkey", "unsigma", "positiveaura", "negativeaura"];
+
+  function playBrainRot() {
+    const wordInput = document.getElementById("brainRotWord").value.trim().toLowerCase();
+    const cost = 10000;
+    const resultDiv = document.getElementById("brainRotResult");
+    const cooldownMsg = document.getElementById("brainRotCooldownMsg");
+
+    if (brainRotCooldown) {
+      cooldownMsg.textContent = "Brain Rot test is on cooldown for 5 minutes.";
+      return;
+    }
+
+    if (users[currentUser].coins < cost) {
+      alert("You don't have enough coins for Brain Rot test.");
+      return;
+    }
+    if (!wordInput) {
+      alert("Enter a brain rot word.");
+      return;
+    }
+
+    if (!brainRotWords.includes(wordInput)) {
+      alert("Incorrect brain rot word!");
+      return;
+    }
+
+    users[currentUser].coins -= cost;
+    saveUsers();
+    updateCoinsDisplay();
+
+    resultDiv.textContent = "Brain Rot test passed! You get 50,000 coins!";
+    users[currentUser].coins += 50000;
+    saveUsers();
+    updateCoinsDisplay();
+
+    brainRotCooldown = true;
+    cooldownMsg.textContent = "Brain Rot test is now on cooldown for 5 minutes.";
+
+    setTimeout(() => {
+      brainRotCooldown = false;
+      cooldownMsg.textContent = "";
+    }, 5 * 60 * 1000);
+  }
+
+  // Admin code check
+  function checkAdminCode() {
+    const code = document.getElementById("adminCodeInput").value.trim();
+    if (code === "OAO") {
+      alert("Admin mode enabled!");
+      document.getElementById("adminPanel").style.display = "block";
+    } else {
+      alert("Incorrect admin code.");
+      document.getElementById("adminPanel").style.display = "none";
+    }
+  }
+
+  // Admin add card
+  function addCardToInventory() {
+    const cardName = document.getElementById("cardNameInput").value.trim();
+    if (!cardName) {
+      alert("Enter card name");
+      return;
+    }
+    const cardData = cards.find(c => c.name.toLowerCase() === cardName.toLowerCase());
+    if (!cardData) {
+      alert("Card not found");
+      return;
+    }
+    const stats = generateStats(cardData.rarity);
+    users[currentUser].inventory.push({
+      name: cardData.name,
+      rarity: cardData.rarity,
+      stats
+    });
+    saveUsers();
+    renderInventory();
+    alert(`Added ${cardData.name} to inventory`);
+  }
+
+  // Admin add coins
+  function changeCoins() {
+    const amount = parseInt(document.getElementById("coinAmountInput").value);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Enter a valid coin amount");
+      return;
+    }
+    users[currentUser].coins += amount;
+    saveUsers();
+    updateCoinsDisplay();
+    alert(`Added ${amount} coins`);
+  }
+
+  // On page load
+  window.onload = () => {
+    users = JSON.parse(localStorage.getItem("bk_users") || "{}");
+    currentUser = localStorage.getItem("bk_currentUser");
+    if (currentUser && users[currentUser]) {
+      startGame();
+    } else {
+      showLogin();
+    }
+  };
+</script>
+
+</body>
+</html>
